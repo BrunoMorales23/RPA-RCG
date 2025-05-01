@@ -21,31 +21,31 @@ while match == False:
     lenght = float(generate_number(180))
 
     url = "https://www.google.com/maps/place/@"+str(latitude)+','+str(lenght)+',10z'
-    browser.open_available_browser(url=url, headless=True, browser_selection='chrome')
-    browser.capture_page_screenshot('./outputs/screenshot.png')
+    browser.open_available_browser(url=url, headless=False, browser_selection='chrome')
     time.sleep(1)
+    browser.capture_page_screenshot('./outputs/screenshot.png')
     browser.close_browser()
 
     img = cv2.imread('./outputs/screenshot.png',cv2.IMREAD_GRAYSCALE)
-    empty_template = cv2.imread('./templates/empty_template.png', cv2.IMREAD_GRAYSCALE)
     water_template = cv2.imread('./templates/water_template.png', cv2.IMREAD_GRAYSCALE)
+    water_template_w_extras = cv2.imread('./templates/water_template_w_extras.png', cv2.IMREAD_GRAYSCALE)
 
-    result = cv2.matchTemplate(img, empty_template, cv2.TM_CCOEFF_NORMED)
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-
-    if max_val >= umbral:
-        print(Fore.RED , max_val)
-        print('------------------------')
-        match = True
-        break
-        
     result = cv2.matchTemplate(img, water_template, cv2.TM_CCOEFF_NORMED)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-    if max_val >= umbral:
+
+    if max_val <= umbral:
         print(Fore.RED , max_val)
         print('---------------------------')
-        match = True
-        break
+        result = cv2.matchTemplate(img, water_template_w_extras, cv2.TM_CCOEFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+        if max_val <= umbral:
+            print(Fore.RED , max_val)
+            print('---------------------------')
+            match = True
+        else:
+            browser.close_all_browsers()
+    else: 
+        browser.close_all_browsers()
 
 print(Fore.GREEN + f"¡Tierra encontrada!")
 url = "https://www.google.com/maps/place/@"+str(latitude)+','+str(lenght)+',3z'
